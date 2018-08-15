@@ -198,7 +198,6 @@ class trainercore(object):
                 res,doc = self._net.run_test(self._sess, test_data)
                 sys.stdout.write('Test set: ')
                 self._report(res,doc)
-            sys.stdout.write(" -- IO Time: {0:.2}s\t GPU Time: {1:.2}s\n".format(time_io, time_gpu))
 
         # Save log
         if summary_step:
