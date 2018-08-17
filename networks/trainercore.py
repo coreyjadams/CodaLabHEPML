@@ -59,13 +59,15 @@ class trainercore(object):
         sys.stdout.flush()
 
 
-    def prepare_manager(self, mode):
+    def prepare_manager(self):
 
-        if mode not in self._config['IO']:
-            raise Exception("Missing IO config mode {} but trying to prepare manager.".format(mode))
+        if 'IO' not in self._config:
+            raise Exception("Missing IO config but trying to prepare manager.")
         else:
             start = time.time()
-            io = io_manager(file_name=self._config['IO'][mode]['FILE'],
+            if self._config['TRAINING']: mode = 'TRAIN'
+            else: mode = 'ANA'
+            io = io_manager(file_name=self._config['IO']['FILE'],
                             io_mode = mode,
                             batch_size = self._config['MINIBATCH_SIZE'])
             self._dataloader = io
@@ -98,19 +100,8 @@ class trainercore(object):
             raise Exception("Must set network object by calling set_network_object() before initialize")
 
 
-
-        # Prepare data managers:
-        for mode in self._config['IO']:
-
-            if mode not in ['TRAIN', 'TEST', 'ANA']:
-                raise Exception("Unknown mode {} requested, must be in ['TRAIN', 'TEST', 'ANA']".format(mode))
-
-            self.prepare_manager(mode)
-
-            # if mode == 'ANA' and 'OUTPUT' in self._config['IO'][mode]:
-            #     print "Initializing output file"
-            #     self._output = larcv.IOManager(self._config['IO'][mode]['OUTPUT'])
-            #     self._output.initialize()
+        # Prepare data manager:
+        self.prepare_manager()
 
         # Net construction:
         start = time.time()
@@ -184,7 +175,7 @@ class trainercore(object):
         if (report_step or summary_step) and 'TEST' in self._config['IO']:
 
             # Read the next batch:
-            self._dataloaders['TEST'].next()
+            # self._dataloaders['TEST'].next()
 
 
             test_data = self.fetch_minibatch_data('TEST')

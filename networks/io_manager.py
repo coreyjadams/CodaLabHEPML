@@ -1,5 +1,7 @@
 import os
 import random
+import time
+import threading
 
 import h5py
 import numpy
@@ -41,6 +43,20 @@ class io_manager(object):
         if io_mode == 'TRAIN':
             self._validation_start = int(self._max_entries*validation_fraction)
 
+        # # This module contains 2 data pointers
+        # # One is for the 'current' data, which is the ready-to-go data
+        # # the other is for the 'next' data, which is read and preprocessed
+        # # in a thread.
+
+        # # when calling train_batch or test_batch, you will be delivered the current
+        # # data, provided it is ready.  If it is not ready, you will get the next
+        # # batch when it is delivered and the reading/processing of the next batch starts
+        # # immediately.
+
+        # self._current_train_batch = None
+        # self._current_test_batch  = None
+        # self._next_train_batch    = None
+        # self._next_test_batch     = None
 
 
     def train_batch(self):
@@ -69,6 +85,14 @@ class io_manager(object):
 
         return values
 
+    def preprocess_batch(self):
+        ''' Perform preprocessing operations on the batch
+        '''
+
+        # With 3 axes, and a batch size of N, we can flip the events
+        # along any axis and any event randomly
+
+        pass
 
     def dims(self):
         '''Return the dimensions of the image
