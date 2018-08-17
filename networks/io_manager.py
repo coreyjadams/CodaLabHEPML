@@ -41,6 +41,8 @@ class io_manager(object):
         if io_mode == 'TRAIN':
             self._validation_start = int(self._max_entries*validation_fraction)
 
+
+
     def train_batch(self):
 
         # Take a random batch of images:
