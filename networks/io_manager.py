@@ -30,10 +30,16 @@ class io_manager(object):
         if io_mode == 'ANA':
             if out_file is None:
                 raise Exception("Must specify output file when doing ANA mode.")
-            self._output = h5py.File(out_file, 'w')
+            self._output = h5py.File(out_file, 'a')
             # Get the shape of the input dataset:
-            shape = self._file['data'].shape
-            self._output.create_dataset('pred', shape)
+            shape = numpy.asarray(self._file['data'].shape)
+            shape[0] = 4000
+            print shape
+            self._output.create_dataset('data',shape=shape, chunks=(1,192,192,192), compression='gzip')
+            self._output.create_dataset('pred',shape=shape, chunks=(1,192,192,192), compression='gzip')
+            if 'label' in self._file.keys():
+                self._output.create_dataset('label', shape=shape, chunks=(1,192,192,192), compression='gzip')
+
             self._ana_entry = 0
         else:
             self._output = None
@@ -119,11 +125,20 @@ class io_manager(object):
 
         # Validate we are writing the correct sequence of next entries:
         first_entry = values['entries'][0]
-        last_entry = values['entries'][-1]
+        last_entry = values['entries'][-1] + 1
+
+        n_written_entries = self._output['pred'].shape[0]
+        new_shape = (n_written_entries + self._batch_size, 192, 192, 192)
 
         # Next, write the events into the file:
-        self._output['data',first_entry:last_entry] = values['data']
-        self._output['pred',first_entry:last_entry] = values['pred']
+        # self._output['data'].resize(new_shape)
+        self._output['data'][first_entry:last_entry] = values['data']
+        self._output['pred'][first_entry:last_entry] = values['pred']
+
+
+        if 'label' in self._output.keys() and 'label' in values:
+            self._output['label'][first_entry:last_entry] = values['label']
+
 
         return
 
@@ -147,4 +162,5 @@ class io_manager(object):
 
     def finalize(self):
         if self._output is not None:
+            print "finalizing"
             self._output.close()

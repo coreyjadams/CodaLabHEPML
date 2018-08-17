@@ -105,48 +105,26 @@ class uresnet_trainer(trainercore.trainercore):
 
 
         softmax, metrics, doc = self.ana(minibatch_data)
-        print softmax
 
+        prediction = numpy.argmax(softmax, axis=-1)
 
         report_step  = self._iteration % self._config['REPORT_ITERATION'] == 0
         if report_step:
             self._report(metrics, doc)
 
+        print "On entries " + str(minibatch_data['entries'])
 
-        if self._output:
+        for entry in xrange(self._config['MINIBATCH_SIZE']):
+            data = minibatch_data['image'][entry,:,:,:]
+            zero_x, zero_y, zero_z  = numpy.where(data == 0.0)
+            prediction[entry,zero_x, zero_y, zero_z] = 0
 
-            # if report_step:
-            #     print "Step {} - Acc all: {}, Acc non zero: {}".format(self._iteration,
-            #         acc_all, acc_nonzero)
+        output = {}
+        output['data'] = minibatch_data['image']
+        output['entries'] = minibatch_data['entries']
+        output['pred'] = prediction
 
-            # for entry in xrange(len(softmax)):
-            #   self._output.read_entry(entry)
-            #   data  = numpy.array(minibatch_data[entry]).reshape(softmax.shape[1:-1])
-            entries   = self._dataloaders['ANA'].fetch_entries()
-            event_ids = self._dataloaders['ANA'].fetch_event_ids()
-
-
-            for entry in xrange(self._config['MINIBATCH_SIZE']):
-                data = minibatch_data['image'][entry,:,:,:]
-                nonzero_x, nonzero_y, nonzero_z  = numpy.where(data > 0.0)
-                indexes = (nonzero_x*196 + nonzero_y) * 196 + nonzero_z
-                indexes = indexes.astype(dtype=numpy.uint64)
-
-                non_zero_labels = softmax
-
-                mapped_lepton_score = lepton_score[nonzero_x,nonzero_y,nonzero_z].astype(dtype=numpy.float32)
-                mapped_nonlepton_score = nonlepton_score[nonzero_x, nonzero_y,nonzero_z].astype(dtype=numpy.float32)
-
-                nonlepton_vs = larcv.as_tensor2d(mapped_nonlepton_score, indexes)
-                larcv_nlep.set(nonlepton_vs, larcv_data.meta())
-                lepton_vs   = larcv.as_tensor2d(mapped_lepton_score, indexes)
-                larcv_lept.set(lepton_vs, larcv_data.meta())
-
-        else:
-            print "Acc all: {}, Acc non zero: {}".format(acc_all, acc_nonzero)
-
-
-        self._dataloaders['ANA'].next(store_entries   = (not self._config['TRAINING']),
-                                      store_event_ids = (not self._config['TRAINING']))
+        # Save the entries to the output file:
+        self._dataloader.write_ana_entries(output)
 
 

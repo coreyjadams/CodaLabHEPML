@@ -239,5 +239,4 @@ class trainercore(object):
             else:
                 self.ana_step()
 
-        if 'ANA' in self._config['IO'] and 'OUTPUT' in self._config['IO']['ANA']:
-            self._output.finalize()
+        self._dataloader.finalize()
