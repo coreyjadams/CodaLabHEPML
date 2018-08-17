@@ -100,7 +100,7 @@ class uresnet3d(uresnetcore):
 
 
             # If desired, add weight regularization loss:
-            if 'REGULARIZE_WEIGHTS' in self._params:
+            if 'REGULARIZE' in self._params:
                 reg_loss = tf.losses.get_regularization_loss()
                 loss += reg_loss
 
@@ -141,6 +141,11 @@ class uresnet3d(uresnetcore):
         if verbosity > 1:
             print inputs
 
+        regularization_strength = 0.0
+        if 'REGULARIZE' in self._params:
+            regularization_strength = self._params['REGULARIZE']
+
+
         x = inputs['image']
 
         x = tf.reshape(x, (x.get_shape().as_list() + [1,]))
@@ -148,7 +153,6 @@ class uresnet3d(uresnetcore):
         # This is a straightforward UResNet architecture.
         # The downsampling and upsampling steps are not complicated
         # residual steps, just normal convolutional layers
-
 
         # Initial convolution to get to the correct number of filters:
 
@@ -181,6 +185,7 @@ class uresnet3d(uresnetcore):
 
                     x = residual_block(x, self._params['TRAINING'],
                                        batch_norm=self._params['BATCH_NORM'],
+                                       regularization_strength=regularization_strength,
                                        name=name)
                 else:
                     name = "block_down"
@@ -189,6 +194,7 @@ class uresnet3d(uresnetcore):
 
                     x = convolutional_block(x, self._params['TRAINING'],
                                             batch_norm=self._params['BATCH_NORM'],
+                                            regularization_strength=regularization_strength,
                                             name=name)
 
             name = "downsample"
@@ -197,6 +203,7 @@ class uresnet3d(uresnetcore):
             network_filters.append(x)
             x = downsample_block(x, self._params['TRAINING'],
                                     batch_norm=self._params['BATCH_NORM'],
+                                    regularization_strength=regularization_strength,
                                     name=name)
 
             if verbosity > 1:
@@ -210,10 +217,14 @@ class uresnet3d(uresnetcore):
         for j in xrange(self._params['BLOCKS_DEEPEST_LAYER']):
             if self._params['RESIDUAL']:
                 x = residual_block(x, self._params['TRAINING'],
-                    batch_norm=self._params['BATCH_NORM'], name="deepest_block_{0}".format(j))
+                    batch_norm=self._params['BATCH_NORM'],
+                    regularization_strength=regularization_strength,
+                    name="deepest_block_{0}".format(j))
             else:
                 x = convolutional_block(x, self._params['TRAINING'],
-                    batch_norm=self._params['BATCH_NORM'], name="deepest_block_{0}".format(j))
+                    batch_norm=self._params['BATCH_NORM'],
+                    regularization_strength=regularization_strength,
+                    name="deepest_block_{0}".format(j))
 
         # Come back up the network:
         for i in xrange(self._params['NETWORK_DEPTH']-1, -1, -1):
@@ -233,6 +244,7 @@ class uresnet3d(uresnetcore):
                                self._params['TRAINING'],
                                batch_norm=self._params['BATCH_NORM'],
                                n_output_filters=n_filters,
+                               regularization_strength=regularization_strength,
                                name=name)
 
 
@@ -252,6 +264,7 @@ class uresnet3d(uresnetcore):
                         is_training=self._params['TRAINING'],
                         name=name,
                         batch_norm=True,
+                        regularization_strength=regularization_strength,
                         dropout=False,
                         kernel_size=[1,1,1],
                         n_filters=n_filters)
@@ -264,6 +277,7 @@ class uresnet3d(uresnetcore):
                     name += "_{0}_{1}".format(i, j)
 
                     x = residual_block(x, self._params['TRAINING'],
+                                       regularization_strength=regularization_strength,
                                        batch_norm=self._params['BATCH_NORM'],
                                        name=name)
                 else:
@@ -271,8 +285,9 @@ class uresnet3d(uresnetcore):
                     name += "_{0}_{1}".format(i, j)
 
                     x = convolutional_block(x, self._params['TRAINING'],
-                                       batch_norm=self._params['BATCH_NORM'],
-                                       name=name)
+                                            batch_norm=self._params['BATCH_NORM'],
+                                            regularization_strength=regularization_strength,
+                                            name=name)
 
 
 

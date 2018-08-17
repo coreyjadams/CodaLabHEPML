@@ -11,6 +11,7 @@ def convolutional_block(input_tensor,
                         kernel_size=[3,3,3],
                         strides=[1,1,1],
                         n_filters=None,
+                        regularization_strength=0.1,
                         reuse=False):
 
     with tf.variable_scope(name):
@@ -38,7 +39,7 @@ def convolutional_block(input_tensor,
                              activation=None,
                              use_bias=False,
                              trainable=is_training,
-                             kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=0.1),
+                             kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=regularization_strength),
                              name="Conv3D",
                              reuse=reuse)
 
@@ -78,6 +79,7 @@ def downsample_block(input_tensor,
                      batch_norm=False,
                      dropout=False,
                      name="",
+                     regularization_strength=0.1,
                      reuse = False):
     """
     @brief      Downsample the input tensor with strided convolutions, increase n_filters by x2
@@ -107,7 +109,7 @@ def downsample_block(input_tensor,
                              activation=None,
                              use_bias=False,
                              trainable=is_training,
-                             kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=0.1),
+                             kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=regularization_strength),
                              name="Conv3D_downsample",
                              reuse=reuse)
 
@@ -143,6 +145,7 @@ def upsample_block(input_tensor,
                    dropout=False,
                    n_output_filters=0,
                    name="",
+                   regularization_strength=0.1,
                    reuse=False):
 
     """Upsample a tensor using transposed convolutions
@@ -172,7 +175,7 @@ def upsample_block(input_tensor,
                              activation=None,
                              use_bias=False,
                              trainable=is_training,
-                             kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=0.1),
+                             kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=regularization_strength),
                              name="Conv3D_upsample",
                              reuse=reuse)
 
@@ -206,6 +209,7 @@ def residual_block(input_tensor,
                    is_training,
                    batch_norm=False,
                    name="",
+                   regularization_strength=0.1,
                    reuse=False):
     """
     @brief      Create a residual block and apply it to the input tensor
@@ -231,6 +235,7 @@ def residual_block(input_tensor,
                                     name='conv_block',
                                     batch_norm=batch_norm,
                                     dropout=False,
+                                    regularization_strength=regularization_strength,
                                     reuse=reuse)
 
         # Apply everything a second time:
@@ -240,6 +245,7 @@ def residual_block(input_tensor,
                                     name='conv_block',
                                     batch_norm=batch_norm,
                                     dropout=False,
+                                    regularization_strength=regularization_strength,
                                     reuse=reuse)
 
         # Sum the input and the output:

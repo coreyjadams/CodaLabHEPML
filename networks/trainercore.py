@@ -65,11 +65,18 @@ class trainercore(object):
             raise Exception("Missing IO config but trying to prepare manager.")
         else:
             start = time.time()
-            if self._config['TRAINING']: mode = 'TRAIN'
-            else: mode = 'ANA'
-            io = io_manager(file_name=self._config['IO']['FILE'],
-                            io_mode = mode,
-                            batch_size = self._config['MINIBATCH_SIZE'])
+            if self._config['TRAINING']:
+                mode = 'TRAIN'
+                io = io_manager(file_name=self._config['IO']['FILE'],
+                                io_mode = mode,
+                                batch_size = self._config['MINIBATCH_SIZE'])
+            else:
+                mode = 'ANA'
+                io = io_manager(file_name=self._config['IO']['FILE'],
+                                io_mode = mode,
+                                out_file = self._config['IO']['OUTPUT'],
+                                batch_size = self._config['MINIBATCH_SIZE'])
+
             self._dataloader = io
 
             end = time.time()

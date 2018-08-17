@@ -37,6 +37,8 @@ class uresnet_trainer(trainercore.trainercore):
         this_data = dict()
         if mode == "TRAIN":
             this_data = self._dataloader.train_batch()
+        elif mode == 'ANA':
+            this_data = self._dataloader.ana_batch()
         else:
             this_data = self._dataloader.test_batch()
 
@@ -97,18 +99,13 @@ class uresnet_trainer(trainercore.trainercore):
 
     def ana_step(self):
 
-
+        # need to write an output hdf5 with the 'pred' column.
+        # This
         minibatch_data = self.fetch_minibatch_data('ANA')
-        minibatch_dims = self.fetch_minibatch_dims('ANA')
-
-
-        # Reshape any other needed objects:
-        for key in minibatch_data.keys():
-            minibatch_data[key] = numpy.reshape(minibatch_data[key], minibatch_dims[key])
 
 
         softmax, metrics, doc = self.ana(minibatch_data)
-
+        print softmax
 
 
         report_step  = self._iteration % self._config['REPORT_ITERATION'] == 0
@@ -130,40 +127,21 @@ class uresnet_trainer(trainercore.trainercore):
 
 
             for entry in xrange(self._config['MINIBATCH_SIZE']):
-                self._output.read_entry(entries[entry])
+                data = minibatch_data['image'][entry,:,:,:]
+                nonzero_x, nonzero_y, nonzero_z  = numpy.where(data > 0.0)
+                indexes = (nonzero_x*196 + nonzero_y) * 196 + nonzero_z
+                indexes = indexes.astype(dtype=numpy.uint64)
 
-                larcv_data = self._output.get_data("image2d","sbndwire")
-                larcv_lept = self._output.get_data("sparse2d","lepton")
-                larcv_nlep = self._output.get_data("sparse2d","nonlepton")
-                for projection_id in range(len(softmax)):
+                non_zero_labels = softmax
 
-                    data = minibatch_data['image'][entry,:,:,projection_id]
-                    nonzero_rows, nonzero_columns  = numpy.where(data > 0.1)
-                    indexes = nonzero_columns * larcv_data.at(projection_id).meta().rows() + nonzero_rows
-                    indexes = indexes.astype(dtype=numpy.uint64)
+                mapped_lepton_score = lepton_score[nonzero_x,nonzero_y,nonzero_z].astype(dtype=numpy.float32)
+                mapped_nonlepton_score = nonlepton_score[nonzero_x, nonzero_y,nonzero_z].astype(dtype=numpy.float32)
 
-                    if '3d' in self._config['NAME']:
-                        lepton_score = softmax[projection_id][entry,:,:,:,1]
-                        nonlepton_score  = softmax[projection_id][entry,:,:,:,2]
-                    else:
-                        lepton_score = softmax[projection_id][entry,:,:,1]
-                        nonlepton_score  = softmax[projection_id][entry,:,:,2]
+                nonlepton_vs = larcv.as_tensor2d(mapped_nonlepton_score, indexes)
+                larcv_nlep.set(nonlepton_vs, larcv_data.meta())
+                lepton_vs   = larcv.as_tensor2d(mapped_lepton_score, indexes)
+                larcv_lept.set(lepton_vs, larcv_data.meta())
 
-                    mapped_lepton_score = lepton_score[nonzero_rows,nonzero_columns].astype(dtype=numpy.float32)
-                    mapped_nonlepton_score = nonlepton_score[nonzero_rows, nonzero_columns].astype(dtype=numpy.float32)
-
-                    # sum_score = lepton_score + nonlepton_score
-                    # lepton_score = lepton_score / sum_score
-                    # nonlepton_score  = nonlepton_score  / sum_score
-
-                    nonlepton_vs = larcv.as_tensor2d(mapped_nonlepton_score, indexes)
-                    nonlepton_vs.id(projection_id)
-                    larcv_nlep.set(nonlepton_vs, larcv_data.at(projection_id).meta())
-                    lepton_vs   = larcv.as_tensor2d(mapped_lepton_score, indexes)
-                    lepton_vs.id(projection_id)
-                    larcv_lept.set(lepton_vs, larcv_data.at(projection_id).meta())
-
-                self._output.save_entry()
         else:
             print "Acc all: {}, Acc non zero: {}".format(acc_all, acc_nonzero)
 

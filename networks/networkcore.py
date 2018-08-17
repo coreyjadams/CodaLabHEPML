@@ -214,6 +214,7 @@ class networkcore(object):
         fd = dict()
 
         for key in inputs:
+            if key == 'entries': continue
             if inputs[key] is not None:
                 if isinstance(inputs[key], dict):
                     for secondard_key in inputs[key].keys():
