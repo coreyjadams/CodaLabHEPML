@@ -22,7 +22,7 @@ class io_manager(object):
         if io_mode != 'TRAIN': raise Exception()
 
         # Open the file:
-        self._file = h5py.File(file_name)
+        self._file = h5py.File(file_name, 'r')
 
 
         if 'data' not in self._file.keys():

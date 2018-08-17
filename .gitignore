@@ -1,4 +1,6 @@
 *.pyc
+*.h5
+*.hdf5
 *log*
 *.zip
 data/
