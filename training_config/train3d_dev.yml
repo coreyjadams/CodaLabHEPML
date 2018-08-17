@@ -23,12 +23,8 @@ ITERATIONS: 5
 # IO Parameters:
 IO:
   TRAIN:
-    PROFILE_IO: true
-    FILE: './larcv_io_config/3d/dev/lepton_seg/train_io.cfg'
-    FILLER: 'TrainIO'
-    VERBOSITY: 3
-    KEYWORD_DATA:  'main_data'
-    KEYWORD_LABEL: 'main_label'
+    FILE: '/home/cadams/DeepLearnPhysics/CodaLabHEPML/data/public_dat_1/train_1-2.hdf5'
+  TEST: true
 
 # General parameters:
 LOGDIR: 'log/log_uresnet_3d/'

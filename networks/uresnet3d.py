@@ -33,8 +33,9 @@ class uresnet3d(uresnetcore):
 
         self._core_network_params += [
             'N_INITIAL_FILTERS',
-            'RESIDUAL_BLOCKS_PER_LAYER',
-            'RESIDUAL_BLOCKS_DEEPEST_LAYER',
+            'RESIDUAL',
+            'BLOCKS_PER_LAYER',
+            'BLOCKS_DEEPEST_LAYER',
             'NETWORK_DEPTH',
         ]
 
@@ -172,14 +173,23 @@ class uresnet3d(uresnetcore):
         # Begin the process of residual blocks and downsampling:
         for i in xrange(self._params['NETWORK_DEPTH']):
 
-            for j in xrange(self._params['RESIDUAL_BLOCKS_PER_LAYER']):
-                name = "resblock_down"
-                name += "_{0}_{1}".format(i, j)
+            for j in xrange(self._params['BLOCKS_PER_LAYER']):
+                if self._params['RESIDUAL']:
+                    name = "resblock_down"
+                    name += "_{0}_{1}".format(i, j)
 
 
-                x = residual_block(x, self._params['TRAINING'],
-                                   batch_norm=self._params['BATCH_NORM'],
-                                   name=name)
+                    x = residual_block(x, self._params['TRAINING'],
+                                       batch_norm=self._params['BATCH_NORM'],
+                                       name=name)
+                else:
+                    name = "block_down"
+                    name += "_{0}_{1}".format(i, j)
+
+
+                    x = convolutional_block(x, self._params['TRAINING'],
+                                            batch_norm=self._params['BATCH_NORM'],
+                                            name=name)
 
             name = "downsample"
             name += "_{0}".format(i)
@@ -197,10 +207,13 @@ class uresnet3d(uresnetcore):
             print "Reached the deepest layer."
 
         # At the bottom, do another residual block:
-        for j in xrange(self._params['RESIDUAL_BLOCKS_DEEPEST_LAYER']):
-            x = residual_block(x, self._params['TRAINING'],
-                batch_norm=self._params['BATCH_NORM'], name="deepest_block_{0}".format(j))
-
+        for j in xrange(self._params['BLOCKS_DEEPEST_LAYER']):
+            if self._params['RESIDUAL']:
+                x = residual_block(x, self._params['TRAINING'],
+                    batch_norm=self._params['BATCH_NORM'], name="deepest_block_{0}".format(j))
+            else:
+                x = convolutional_block(x, self._params['TRAINING'],
+                    batch_norm=self._params['BATCH_NORM'], name="deepest_block_{0}".format(j))
 
         # Come back up the network:
         for i in xrange(self._params['NETWORK_DEPTH']-1, -1, -1):
@@ -245,22 +258,24 @@ class uresnet3d(uresnetcore):
 
 
             # Residual
-            for j in xrange(self._params['RESIDUAL_BLOCKS_PER_LAYER']):
-                name = "resblock_up"
-                name += "_{0}_{1}".format(i, j)
+            for j in xrange(self._params['BLOCKS_PER_LAYER']):
+                if self._params['RESIDUAL']:
+                    name = "resblock_up"
+                    name += "_{0}_{1}".format(i, j)
 
-                x = residual_block(x, self._params['TRAINING'],
-                                   batch_norm=self._params['BATCH_NORM'],
-                                   name=name)
+                    x = residual_block(x, self._params['TRAINING'],
+                                       batch_norm=self._params['BATCH_NORM'],
+                                       name=name)
+                else:
+                    name = "block_up"
+                    name += "_{0}_{1}".format(i, j)
+
+                    x = convolutional_block(x, self._params['TRAINING'],
+                                       batch_norm=self._params['BATCH_NORM'],
+                                       name=name)
 
 
 
-        name = "FinalResidualBlock"
-
-        x = residual_block(x,
-                self._params['TRAINING'],
-                batch_norm=self._params['BATCH_NORM'],
-                name=name)
 
         name = "BottleneckConv2D"
 

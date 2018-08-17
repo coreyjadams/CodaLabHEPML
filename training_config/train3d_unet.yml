@@ -15,7 +15,7 @@ NETWORK:
   NUM_LABELS: 3
 
 # training parameters:
-N_MINIBATCH: 1
+N_MINIBATCH: 4
 MINIBATCH_SIZE: 1
 SAVE_ITERATION: 500
 REPORT_ITERATION: 10
@@ -30,7 +30,7 @@ IO:
     FILE: '/home/cadams/DeepLearnPhysics/CodaLabHEPML/data/public_dat_1/train_1-2.hdf5'
 
 # General parameters:
-LOGDIR: 'log/log_uresnet_3d/'
+LOGDIR: 'log/unet_3d/'
 RESTORE: False
 
 
