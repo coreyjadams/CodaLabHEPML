@@ -26,11 +26,11 @@ ITERATIONS: 25000
 
 # IO Parameters:
 IO:
-  TRAIN:
-    FILE: '/home/cadams/DeepLearnPhysics/CodaLabHEPML/data/public_dat_1/train_1-2.hdf5'
+  TEST:  True
+  FILE: '/home/cadams/DeepLearnPhysics/CodaLabHEPML/data/public_dat_1/train_1-2.hdf5'
 
 # General parameters:
 LOGDIR: 'log/unet_3d/'
-RESTORE: False
+RESTORE: True
 
 
