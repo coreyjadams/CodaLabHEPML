@@ -125,7 +125,7 @@ class trainercore(object):
         self._writer = tf.summary.FileWriter(self._config['LOGDIR'] + '/train/')
         self._saver = tf.train.Saver()
 
-        if 'TEST' in self._config['IO']:
+        if 'TEST' in self._config['IO'] and self._config['IO']['TEST']:
             self._writer_test = tf.summary.FileWriter(self._config['LOGDIR'] + '/test/')
 
         #
@@ -185,7 +185,7 @@ class trainercore(object):
             sys.stdout.write('@ iteration {}\n'.format(self._iteration))
             sys.stdout.write('Train set: ')
             self._report(numpy.mean(self._batch_metrics,axis=0),self._descr_metrics)
-            if 'TEST' in self._dataloaders:
+            if 'TEST' in self._config['IO'] and self._config['IO']['TEST']:
                 res,doc = self._net.run_test(self._sess, test_data)
                 sys.stdout.write('Test set: ')
                 self._report(res,doc)
@@ -195,7 +195,7 @@ class trainercore(object):
             # Run summary
             self._writer.add_summary(self._net.make_summary(self._sess, minibatch_data),
                                      self._iteration)
-            if 'TEST' in self._config['IO']:
+            if 'TEST' in self._config['IO'] and self._config['IO']['TEST']:
                 self._writer_test.add_summary(self._net.make_summary(self._sess, test_data),
                                               self._iteration)
 
