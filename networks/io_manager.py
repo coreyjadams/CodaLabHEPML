@@ -7,6 +7,7 @@ import h5py
 import numpy
 
 
+
 class io_manager(object):
     '''This class is responsible for reading and writing to h5 files
     for this competition
@@ -142,12 +143,21 @@ class io_manager(object):
 
         return
 
-    def preprocess_batch(self):
+    def preprocess_batch(self, entry):
         ''' Perform preprocessing operations on the batch
         '''
 
         # With 3 axes, and a batch size of N, we can flip the events
         # along any axis and any event randomly
+
+        # Pick randomly to flip x, y, and z axes
+        axis = []
+        if random.choice([True, False]):
+            axis.append(1)
+        if random.choice([True, False]):
+            axis.append(2)
+        if random.choice([True, False]):
+            axis.append(3)
 
         pass
 
