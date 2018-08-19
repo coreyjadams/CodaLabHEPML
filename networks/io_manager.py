@@ -278,8 +278,8 @@ class io_manager(file_reader):
 
         '''
 
-        return {'image' : (self._batch_size, 192, 192, 192) ,
-                'label' : (self._batch_size, 192, 192, 192) }
+        return {'image' : (self._config['BATCH_SIZE'], 192, 192, 192) ,
+                'label' : (self._config['BATCH_SIZE'], 192, 192, 192) }
 
 
     # def finalize(self):
