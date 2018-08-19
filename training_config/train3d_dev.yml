@@ -1,5 +1,5 @@
 # network parameters
-NAME: 'uresnet3d'
+NAME: 'unet3d'
 #
 # Data is 192x192x192, 192 == 2**6 * 3
 # Downsampling 4 times gives a spatial resolution of 12 x 12 x 12
@@ -13,25 +13,32 @@ NETWORK:
   BALANCE_LOSS: True
   BATCH_NORM: True
   NUM_LABELS: 3
+  REGULARIZE: 0.001
 
 # training parameters:
 N_MINIBATCH: 1
 MINIBATCH_SIZE: 1
 SAVE_ITERATION: 5000
-REPORT_ITERATION: 10
+REPORT_ITERATION: 1
 SUMMARY_ITERATION: 1
 BASE_LEARNING_RATE:  0.001
 ITERATIONS: 50
 
-TRAINING: True
+TRAINING: False
 
 # IO Parameters:
 IO:
-  FILE: '/home/cadams/DeepLearnPhysics/CodaLabHEPML/data/public_dat_1/train_1-2.hdf5'
-  TEST: True
+  TRAIN:
+    FILE: '/home/cadams/DeepLearnPhysics/CodaLabHEPML/data/public_dat_1/train_5-6.hdf5'
+    MAX: 4500
+    NUM_THREADS: 4
+  TEST:
+    FILE: '/home/cadams/DeepLearnPhysics/CodaLabHEPML/data/public_dat_1/train_5-6.hdf5'
+    MIN: 4500
+    NUM_THREADS: 4
 
 # General parameters:
-LOGDIR: 'log/log_dev/'
+LOGDIR: 'log/unet_3d_dev/'
 RESTORE: False
 
 
