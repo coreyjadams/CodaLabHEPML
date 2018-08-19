@@ -1,4 +1,4 @@
-import os
+import sys, os
 import random
 import time
 import threading
@@ -24,6 +24,7 @@ class file_reader(object):
         super(file_reader, self).__init__()
 
         self._config = config
+        self._name = 'Null'
 
         # make sure the file name is in the config file:
         if 'FILE' not in config:
@@ -91,6 +92,8 @@ class file_reader(object):
 
             # If current batch data is None, move next to current
             if self._current_batch_data is None:
+                if 'DEBUG' in self._config:
+                    sys.stdout.write(self._name + ': Transfering {} batch from buffer to up-next.\n')
                 self._current_batch_data = self._next_batch_data
                 self._next_batch_data    = None
 
@@ -239,6 +242,7 @@ class io_manager(file_reader):
         if config['MODE'] not in ['TRAIN', 'TEST', 'ANA']:
             raise Exception("Need to specify training, testing or inference mode")
 
+        self._name = config['MODE']
 
         # Create a file_reader for this file:
 
