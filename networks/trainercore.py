@@ -71,7 +71,7 @@ class trainercore(object):
             config['ITERATIONS'] = self._config['ITERATIONS']
             config['MODE'] = mode
 
-            self._dataloaders['mode'] = io_manager(config)
+            self._dataloaders[mode] = io_manager(config)
 
             end = time.time()
 
