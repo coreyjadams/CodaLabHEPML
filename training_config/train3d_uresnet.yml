@@ -17,7 +17,7 @@ NETWORK:
 
 # training parameters:
 N_MINIBATCH: 4
-MINIBATCH_SIZE: 1
+MINIBATCH_SIZE: 2
 SAVE_ITERATION: 500
 REPORT_ITERATION: 10
 SUMMARY_ITERATION: 1
@@ -28,13 +28,13 @@ ITERATIONS: 25000
 # IO Parameters:
 IO:
   TRAIN:
-    FILE: '/home/cadams/DeepLearnPhysics/CodaLabHEPML/data/public_dat_1/train_5-6.hdf5'
+    FILE: '/home/cadams/DeepLearnPhysics/CodaLabHEPML/data/train_5-6.h5'
     MAX: 4500
-    NUM_THREADS: 4
+    NUM_THREADS: 2
   TEST:
-    FILE: '/home/cadams/DeepLearnPhysics/CodaLabHEPML/data/public_dat_1/train_5-6.hdf5'
+    FILE: '/home/cadams/DeepLearnPhysics/CodaLabHEPML/data/train_5-6.h5'
     MIN: 4500
-    NUM_THREADS: 4
+    NUM_THREADS: 2
 
 
 # General parameters:
