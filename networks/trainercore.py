@@ -59,25 +59,19 @@ class trainercore(object):
         sys.stdout.flush()
 
 
-    def prepare_manager(self):
+    def prepare_manager(self, mode):
 
         if 'IO' not in self._config:
             raise Exception("Missing IO config but trying to prepare manager.")
         else:
             start = time.time()
-            if self._config['TRAINING']:
-                mode = 'TRAIN'
-                io = io_manager(file_name=self._config['IO']['FILE'],
-                                io_mode = mode,
-                                batch_size = self._config['MINIBATCH_SIZE'])
-            else:
-                mode = 'ANA'
-                io = io_manager(file_name=self._config['IO']['FILE'],
-                                io_mode = mode,
-                                out_file = self._config['IO']['OUTPUT'],
-                                batch_size = self._config['MINIBATCH_SIZE'])
 
-            self._dataloader = io
+            config = self._config['IO'][mode]
+            config['BATCH_SIZE'] = self._config['MINIBATCH_SIZE']
+            config['ITERATIONS'] = self._config['ITERATIONS']
+            config['MODE'] = mode
+
+            self._dataloaders['mode'] = io_manager(config)
 
             end = time.time()
 
@@ -108,7 +102,8 @@ class trainercore(object):
 
 
         # Prepare data manager:
-        self.prepare_manager()
+        for mode in self._config['IO']:
+            self.prepare_manager(mode)
 
         # Net construction:
         start = time.time()
@@ -238,5 +233,5 @@ class trainercore(object):
                 self.train_step()
             else:
                 self.ana_step()
-
-        self._dataloader.finalize()
+        if 'ANA' in self._dataloaders:
+            self._dataloader['ANA'].finalize()
