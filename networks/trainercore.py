@@ -72,7 +72,7 @@ class trainercore(object):
             config['MODE'] = mode
 
             self._dataloaders[mode] = io_manager(config)
-
+            self._dataloaders[mode].start_reader()
             end = time.time()
 
             sys.stdout.write("Time to start {0} IO: {1:.2}s\n".format(mode, end - start))
