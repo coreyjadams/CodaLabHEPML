@@ -236,7 +236,7 @@ class io_manager(file_reader):
         self._config = config
 
         # Right now, only supporting read mode
-        if config['MODE'] not in ['TRAIN', 'TEST' 'ANA']:
+        if config['MODE'] not in ['TRAIN', 'TEST', 'ANA']:
             raise Exception("Need to specify training, testing or inference mode")
 
 
