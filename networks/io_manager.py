@@ -199,7 +199,7 @@ class file_reader(object):
 
         # values['image']  = self._file['data'][rand_start:rand_start+n_events]
         if 'label' in self._file.keys():
-            values['label'] = numpy.zeros((self._config['BATCH_SIZE'], 192, 192, 192))
+            values['label'] = numpy.zeros((self._config['BATCH_SIZE'], 192, 192, 192), dtype=numpy.int8)
 
             t_list = []
             for i in range(n_threads):
