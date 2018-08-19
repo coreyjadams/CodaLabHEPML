@@ -34,7 +34,7 @@ class uresnet_trainer(trainercore.trainercore):
         #            minibatch_data   = self._dataloaders['train'].fetch_data(
         #        self._config['TRAIN_CONFIG']['KEYWORD_DATA']).data()
 
-        this_data = self._dataloader[mode].consume_batch_data()
+        this_data = self._dataloaders[mode].consume_batch_data()
 
         # If the weights for each pixel are to be normalized, compute the weights too:
         if self._config['NETWORK']['BALANCE_LOSS']:
@@ -46,7 +46,7 @@ class uresnet_trainer(trainercore.trainercore):
     def fetch_minibatch_dims(self,mode):
         # Return a dictionary object with keys 'image', 'label', and others as needed
         # self._dataloaders['train'].fetch_data(keyword_label).dim() as an example
-        this_dims = self._dataloader[mode].dims()
+        this_dims = self._dataloaders[mode].dims()
 
 
         # If the weights for each pixel are to be normalized, compute the weights too:
