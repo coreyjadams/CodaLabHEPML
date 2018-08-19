@@ -86,9 +86,17 @@ class file_reader(object):
                 )
                 if 'PREPROCESS' in self._config and self._config['PREPROCESS']:
                     self._preprocess(self._next_batch_data,self._num_threads)
-
             while self._reading:
                 wait(0.1)
+
+            if 'DEBUG' in self._config:
+                if 'label' in self._next_batch_data:
+                    for i in range(len(self._next_batch_data['label'])):
+                        unique_vals, counts = numpy.unique(self._next_batch_data['label'][i], return_counts=True)
+                        for val, count in zip(unique_vals, counts):
+                            sys.stdout.write(self._name + ": {} - {}, {}\n".format(i,val,count))
+
+
 
             # If current batch data is None, move next to current
             if self._current_batch_data is None:
