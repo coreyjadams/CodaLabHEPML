@@ -28,11 +28,11 @@ ITERATIONS: 25000
 # IO Parameters:
 IO:
   TRAIN:
-    FILE: '/home/cadams/DeepLearnPhysics/CodaLabHEPML/data/train_5-6.hdf5'
+    FILE: '/home/cadams/DeepLearnPhysics/CodaLabHEPML/data/train_5-6.h5'
     MAX: 4500
     NUM_THREADS: 2
   TEST:
-    FILE: '/home/cadams/DeepLearnPhysics/CodaLabHEPML/data/train_5-6.hdf5'
+    FILE: '/home/cadams/DeepLearnPhysics/CodaLabHEPML/data/train_5-6.h5'
     MIN: 4500
     NUM_THREADS: 2
 
