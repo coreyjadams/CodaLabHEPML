@@ -112,7 +112,10 @@ class trainercore(object):
         # Make sure all required dimensions are present:
 
         # Either use TRAIN or ANA in the dim fetching
-        dims = self.fetch_minibatch_dims()
+        if 'TRAIN' in self._dataloaders.keys():
+            dims = self.fetch_minibatch_dims('TRAIN')
+        else:
+            dims = self.fetch_minibatch_dims('ANA')
 
 
         self._net.construct_network(dims=dims)
