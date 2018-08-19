@@ -225,8 +225,12 @@ class file_reader(object):
 
 
     def consume_batch_data(self):
+
         while self._current_batch_data is None:
             time.sleep(0.1)
+
+        if 'DEBUG' in self._config:
+            sys.stdout.write("Consuming batch data.")
 
         ret = self._current_batch_data
         self._current_batch_data = None
