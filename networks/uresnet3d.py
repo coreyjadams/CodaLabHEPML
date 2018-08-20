@@ -103,6 +103,7 @@ class uresnet3d(uresnetcore):
             if 'REGULARIZE' in self._params:
                 reg_loss = tf.losses.get_regularization_loss()
                 loss += reg_loss
+            self._temp_loss = loss
 
 
             # Total summary:

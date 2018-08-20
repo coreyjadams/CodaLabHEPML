@@ -41,12 +41,12 @@ class uresnet_trainer(trainercore.trainercore):
             this_data['weight'] = self.compute_weights(this_data['label'])
 
 
-        if 'DEBUG' in self._config['IO'][mode]:
-            for i in range(len(this_data['label'])):
-                print numpy.unique(this_data['label'][i])
-                print numpy.mean(this_data['image'][i])
-                if self._config['NETWORK']['BALANCE_LOSS']:
-                    print numpy.unique(this_data['weight'][i])
+        # if 'DEBUG' in self._config['IO'][mode]:
+        #     for i in range(len(this_data['label'])):
+        #         print numpy.unique(this_data['label'][i])
+        #         print numpy.mean(this_data['image'][i])
+        #         if self._config['NETWORK']['BALANCE_LOSS']:
+        #             print numpy.unique(this_data['weight'][i])
 
 
         return this_data

@@ -226,15 +226,24 @@ class file_reader(object):
 
     def consume_batch_data(self):
 
-        while self._current_batch_data is None:
-            time.sleep(0.1)
+        # while self._current_batch_data is None:
+        #     time.sleep(0.1)
 
-        if 'DEBUG' in self._config:
-            sys.stdout.write("Consuming batch data.\n")
+        # if 'DEBUG' in self._config:
+        #     sys.stdout.write("Consuming batch data.\n")
 
-        ret = self._current_batch_data
-        self._current_batch_data = None
-        return ret
+        # ret = self._current_batch_data
+        # self._current_batch_data = None
+
+        # Just read a chunk and return it:
+        values = {}
+        start = random.randint(0,4000)
+        values['image'] = self._file['data'][start:start+self._config['BATCH_SIZE']]
+        values['label'] = self._file['label'][start:start+self._config['BATCH_SIZE']]
+
+        print values['image'].shape
+
+        return values
 
 # class file_writer(object):
     # pass

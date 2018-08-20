@@ -2,6 +2,8 @@ import os
 import sys
 import time
 
+import code
+
 import numpy
 
 from io_manager import io_manager
@@ -160,10 +162,15 @@ class trainercore(object):
 
             minibatch_data = self.fetch_minibatch_data('TRAIN')
 
+            code.interact(local=locals())
+
 
             res,doc = self._net.accum_gradients(sess   = self._sess,
                                                 inputs = minibatch_data)
 
+            print self._sess.run(self._net._temp_loss, feed_dict = self._net.feed_dict(minibatch_data))
+
+            code.interact(local=locals())
 
 
             if self._batch_metrics is None:
@@ -184,6 +191,7 @@ class trainercore(object):
 
 
             test_data = self.fetch_minibatch_data('TEST')
+        code.interact(local=locals())
 
         # Report
         if report_step:
