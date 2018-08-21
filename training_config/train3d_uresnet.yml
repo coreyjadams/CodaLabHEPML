@@ -12,7 +12,7 @@ NETWORK:
   BLOCKS_DEEPEST_LAYER: 8
   BALANCE_LOSS: True
   BATCH_NORM: True
-  NUM_LABELS: 3
+  NUM_LABELS: 4
   REGULARIZE: 0.001
 
 # training parameters:
