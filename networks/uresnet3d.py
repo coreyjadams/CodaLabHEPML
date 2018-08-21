@@ -83,27 +83,27 @@ class uresnet3d(uresnetcore):
 
 
         with tf.name_scope('cross_entropy'):
-            # label = tf.squeeze(inputs['label'], axis=-1)
-            label = inputs['label']
+            label = tf.squeeze(inputs['label'], axis=-1)
 
 
             loss = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=label,
                                                                   logits=outputs)
 
+            self._raw_loss = loss
+
 
             if self._params['BALANCE_LOSS']:
-                # weight = tf.squeeze(inputs['weight'], axis=-1)
-                weight = inputs['weight']
+                weight = tf.squeeze(inputs['weight'], axis=-1)
                 loss = tf.multiply(loss, weight)
 
             loss = tf.reduce_sum(loss)
-
+            self._weighted_loss = loss
 
             # If desired, add weight regularization loss:
-            if 'REGULARIZE' in self._params:
+            if 'REGULARIZE_WEIGHTS' in self._params:
                 reg_loss = tf.losses.get_regularization_loss()
+                self._reg_loss = reg_loss
                 loss += reg_loss
-            self._temp_loss = loss
 
 
             # Total summary:
@@ -118,17 +118,21 @@ class uresnet3d(uresnetcore):
 
         # Compare how often the input label and the output prediction agree:
 
+
         with tf.name_scope('accuracy'):
 
+            labels = tf.squeeze(inputs['label'], axis=-1)
+
             # Find the non zero labels:
-            non_zero_indices = tf.not_equal(inputs['label'], tf.constant(0, inputs['label'].dtype))
+            non_zero_indices = tf.not_equal(labels, tf.constant(0, labels.dtype))
+
 
             non_zero_logits = tf.boolean_mask(outputs['prediction'], non_zero_indices)
-            non_zero_labels = tf.boolean_mask(inputs['label'], non_zero_indices)
+            non_zero_labels = tf.boolean_mask(labels, non_zero_indices)
 
             non_bkg_accuracy = tf.reduce_mean(tf.cast(tf.equal(non_zero_logits, non_zero_labels), tf.float32))
 
-            correct_prediction = tf.equal(inputs['label'],
+            correct_prediction = tf.equal(labels,
                                           outputs['prediction'])
             accuracy_all = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
             tf.summary.scalar("Accuracy", accuracy_all)
@@ -142,18 +146,12 @@ class uresnet3d(uresnetcore):
         if verbosity > 1:
             print inputs
 
-        regularization_strength = 0.0
-        if 'REGULARIZE' in self._params:
-            regularization_strength = self._params['REGULARIZE']
-
-
         x = inputs['image']
-
-        x = tf.reshape(x, (x.get_shape().as_list() + [1,]))
 
         # This is a straightforward UResNet architecture.
         # The downsampling and upsampling steps are not complicated
         # residual steps, just normal convolutional layers
+
 
         # Initial convolution to get to the correct number of filters:
 
@@ -168,6 +166,10 @@ class uresnet3d(uresnetcore):
         if verbosity > 1:
             print x.get_shape()
 
+        if self._params['RESIDUAL']:
+            block = residual_block
+        else:
+            block = convolutional_block
 
 
         # Need to keep track of the outputs of the residual blocks before downsampling, to feed
@@ -179,24 +181,13 @@ class uresnet3d(uresnetcore):
         for i in xrange(self._params['NETWORK_DEPTH']):
 
             for j in xrange(self._params['BLOCKS_PER_LAYER']):
-                if self._params['RESIDUAL']:
-                    name = "resblock_down"
-                    name += "_{0}_{1}".format(i, j)
+                name = "block_down"
+                name += "_{0}_{1}".format(i, j)
 
 
-                    x = residual_block(x, self._params['TRAINING'],
-                                       batch_norm=self._params['BATCH_NORM'],
-                                       regularization_strength=regularization_strength,
-                                       name=name)
-                else:
-                    name = "block_down"
-                    name += "_{0}_{1}".format(i, j)
-
-
-                    x = convolutional_block(x, self._params['TRAINING'],
-                                            batch_norm=self._params['BATCH_NORM'],
-                                            regularization_strength=regularization_strength,
-                                            name=name)
+                x = block(x, self._params['TRAINING'],
+                                   batch_norm=self._params['BATCH_NORM'],
+                                   name=name)
 
             name = "downsample"
             name += "_{0}".format(i)
@@ -204,7 +195,6 @@ class uresnet3d(uresnetcore):
             network_filters.append(x)
             x = downsample_block(x, self._params['TRAINING'],
                                     batch_norm=self._params['BATCH_NORM'],
-                                    regularization_strength=regularization_strength,
                                     name=name)
 
             if verbosity > 1:
@@ -216,16 +206,9 @@ class uresnet3d(uresnetcore):
 
         # At the bottom, do another residual block:
         for j in xrange(self._params['BLOCKS_DEEPEST_LAYER']):
-            if self._params['RESIDUAL']:
-                x = residual_block(x, self._params['TRAINING'],
-                    batch_norm=self._params['BATCH_NORM'],
-                    regularization_strength=regularization_strength,
-                    name="deepest_block_{0}".format(j))
-            else:
-                x = convolutional_block(x, self._params['TRAINING'],
-                    batch_norm=self._params['BATCH_NORM'],
-                    regularization_strength=regularization_strength,
-                    name="deepest_block_{0}".format(j))
+            x = block(x, self._params['TRAINING'],
+                batch_norm=self._params['BATCH_NORM'], name="deepest_block_{0}".format(j))
+
 
         # Come back up the network:
         for i in xrange(self._params['NETWORK_DEPTH']-1, -1, -1):
@@ -245,7 +228,6 @@ class uresnet3d(uresnetcore):
                                self._params['TRAINING'],
                                batch_norm=self._params['BATCH_NORM'],
                                n_output_filters=n_filters,
-                               regularization_strength=regularization_strength,
                                name=name)
 
 
@@ -265,7 +247,6 @@ class uresnet3d(uresnetcore):
                         is_training=self._params['TRAINING'],
                         name=name,
                         batch_norm=True,
-                        regularization_strength=regularization_strength,
                         dropout=False,
                         kernel_size=[1,1,1],
                         n_filters=n_filters)
@@ -273,25 +254,21 @@ class uresnet3d(uresnetcore):
 
             # Residual
             for j in xrange(self._params['BLOCKS_PER_LAYER']):
-                if self._params['RESIDUAL']:
-                    name = "resblock_up"
-                    name += "_{0}_{1}".format(i, j)
+                name = "resblock_up"
+                name += "_{0}_{1}".format(i, j)
 
-                    x = residual_block(x, self._params['TRAINING'],
-                                       regularization_strength=regularization_strength,
-                                       batch_norm=self._params['BATCH_NORM'],
-                                       name=name)
-                else:
-                    name = "block_up"
-                    name += "_{0}_{1}".format(i, j)
-
-                    x = convolutional_block(x, self._params['TRAINING'],
-                                            batch_norm=self._params['BATCH_NORM'],
-                                            regularization_strength=regularization_strength,
-                                            name=name)
+                x = block(x, self._params['TRAINING'],
+                                   batch_norm=self._params['BATCH_NORM'],
+                                   name=name)
 
 
 
+        name = "FinalResidualBlock"
+
+        x = block(x,
+                self._params['TRAINING'],
+                batch_norm=self._params['BATCH_NORM'],
+                name=name)
 
         name = "BottleneckConv2D"
 

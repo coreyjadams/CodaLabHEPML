@@ -28,13 +28,19 @@ ITERATIONS: 25000
 # IO Parameters:
 IO:
   TRAIN:
-    FILE: '/home/cadams/DeepLearnPhysics/CodaLabHEPML/data/train_5-6.h5'
-    MAX: 4500
-    NUM_THREADS: 2
+    FILE: './larcv_io_config/train_io.cfg'
+    FILLER: 'TrainIO'
+    VERBOSITY: 3
+    KEYWORD_DATA:  'main_data'
+    KEYWORD_LABEL: 'main_label'
+
   TEST:
-    FILE: '/home/cadams/DeepLearnPhysics/CodaLabHEPML/data/train_5-6.h5'
-    MIN: 4500
-    NUM_THREADS: 2
+    PROFILE_IO: false
+    FILE: './larcv_io_config/test_io.cfg'
+    FILLER: 'TestIO'
+    VERBOSITY: 3
+    KEYWORD_DATA:  'test_data'
+    KEYWORD_LABEL: 'test_label'
 
 
 # General parameters:
