@@ -64,7 +64,7 @@ class uresnetcore(networkcore):
         if 'label' in dims:
             inputs['label'] =  tf.placeholder(tf.int64, dims['label'], name="label")
 
-        if self._params['BALANCE_LOSS']:
+        if 'label' in dims and self._params['BALANCE_LOSS']:
             if 'weight' in dims:
                 inputs['weight'] = tf.placeholder(tf.float32, dims['weight'], name='weight')
             else:

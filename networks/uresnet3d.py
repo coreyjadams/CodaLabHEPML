@@ -81,6 +81,8 @@ class uresnet3d(uresnetcore):
         returns a single scalar for the optimizer to use.
         '''
 
+        if 'label' not in inputs:
+            return None
 
         with tf.name_scope('cross_entropy'):
             label = tf.squeeze(inputs['label'], axis=-1)
@@ -89,7 +91,6 @@ class uresnet3d(uresnetcore):
             loss = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=label,
                                                                   logits=outputs)
 
-            self._raw_loss = loss
 
 
             if self._params['BALANCE_LOSS']:
@@ -97,12 +98,10 @@ class uresnet3d(uresnetcore):
                 loss = tf.multiply(loss, weight)
 
             loss = tf.reduce_sum(loss)
-            self._weighted_loss = loss
 
             # If desired, add weight regularization loss:
             if 'REGULARIZE_WEIGHTS' in self._params:
                 reg_loss = tf.losses.get_regularization_loss()
-                self._reg_loss = reg_loss
                 loss += reg_loss
 
 

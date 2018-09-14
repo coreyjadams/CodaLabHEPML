@@ -78,36 +78,38 @@ class networkcore(object):
         sys.stdout.write(" - Finished Softmax creation [{0:.2}s]\n".format(time.time() - start))
 
 
+        # These steps are not needed if we are just running inference on unlabeled data:
+        if self._params['HAS_LABELS']:
 
-        start = time.time()
-        # Keep a list of trainable variables for minibatching:
-        with tf.variable_scope('gradient_accumulation'):
-            self._accum_vars = [tf.Variable(tv.initialized_value(),
-                                trainable=False) for tv in tf.trainable_variables()]
+            start = time.time()
+            # Keep a list of trainable variables for minibatching:
+            with tf.variable_scope('gradient_accumulation'):
+                self._accum_vars = [tf.Variable(tv.initialized_value(),
+                                    trainable=False) for tv in tf.trainable_variables()]
 
-        sys.stdout.write(" - Finished gradient accumulation [{0:.2}s]\n".format(time.time() - start))
+            sys.stdout.write(" - Finished gradient accumulation [{0:.2}s]\n".format(time.time() - start))
 
-        start = time.time()
-        self._loss = self._calculate_loss(self._input, self._logits)
-        sys.stdout.write(" - Finished loss calculation [{0:.2}s]\n".format(time.time() - start))
-
-
-        start = time.time()
-        self._accuracy = self._calculate_accuracy(self._input, self._output)
-        sys.stdout.write(" - Finished accuracy calculation [{0:.2}s]\n".format(time.time() - start))
+            start = time.time()
+            self._loss = self._calculate_loss(self._input, self._logits)
+            sys.stdout.write(" - Finished loss calculation [{0:.2}s]\n".format(time.time() - start))
 
 
-        # Optimizer:
-        start = time.time()
-        self._create_optimizer(self._loss)
-        sys.stdout.write(" - Finished optimizer [{0:.2}s]\n".format(time.time() - start))
+            start = time.time()
+            self._accuracy = self._calculate_accuracy(self._input, self._output)
+            sys.stdout.write(" - Finished accuracy calculation [{0:.2}s]\n".format(time.time() - start))
 
 
-        # Merge the summaries:
-        start = time.time()
-        self._make_snapshots(self._input, self._output)
-        self._merged_summary = tf.summary.merge_all()
-        sys.stdout.write(" - Finished snapshotting [{0:.2}s]\n".format(time.time() - start))
+            # Optimizer:
+            start = time.time()
+            self._create_optimizer(self._loss)
+            sys.stdout.write(" - Finished optimizer [{0:.2}s]\n".format(time.time() - start))
+
+
+            # Merge the summaries:
+            start = time.time()
+            self._make_snapshots(self._input, self._output)
+            self._merged_summary = tf.summary.merge_all()
+            sys.stdout.write(" - Finished snapshotting [{0:.2}s]\n".format(time.time() - start))
 
         # All done building the network model, return
         return
@@ -280,9 +282,13 @@ class networkcore(object):
         ops = self._output['softmax']
         softmax = sess.run( ops, feed_dict = feed_dict )
 
-        ops_metrics, doc_metrics = self.metrics(inputs)
+        if 'label' in inputs:
+            ops_metrics, doc_metrics = self.metrics(inputs)
 
-        return softmax, sess.run( ops_metrics, feed_dict = feed_dict ), doc_metrics
+            return softmax, sess.run( ops_metrics, feed_dict = feed_dict ), doc_metrics
+
+        else:
+            return softmax
 
     def metrics(self, inputs):
 
