@@ -18,7 +18,7 @@ NETWORK:
   BATCH_NORM: True
   NUM_LABELS: 4
   REGULARIZE: 0.001
-  HAS_LABELS: False
+  HAS_LABELS: True
 
 # training parameters:
 N_MINIBATCH: 4
