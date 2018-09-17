@@ -12,16 +12,17 @@ NETWORK:
   RESIDUAL: {block}
   CONCATENATE: {concat}
   MERGE_BEFORE_BLOCK: {merge}
-  BLOCKS_PER_LAYER: 6
+  BLOCKS_PER_LAYER: {n_blocks}
   BLOCKS_DEEPEST_LAYER: 8
   BALANCE_LOSS: True
   BATCH_NORM: True
   NUM_LABELS: 4
   REGULARIZE: 0.001
+  HAS_LABELS: True
 
-# training parameters:
-N_MINIBATCH: 4
-MINIBATCH_SIZE: 2
+# training parameters
+N_MINIBATCH: 6
+MINIBATCH_SIZE: 1
 SAVE_ITERATION: 500
 REPORT_ITERATION: 10
 SUMMARY_ITERATION: 1
@@ -63,10 +64,16 @@ for block_choice in block_options:
         for merge_choice in merge_options:
             name = "unet_3d_concat_{}_residual_{}_merge_pre_block_{}".format(concat_choice, block_choice, merge_choice)
 
+            if block_choice == 'True':
+                n_blocks = 2
+            else:
+                n_blocks = 4
+
             config = base_config.format(
                     name = name,
                     block = block_choice,
                     concat = concat_choice,
+                    n_blocks = n_blocks,
                     merge = merge_choice
                 )
             with open(name + ".yml", 'w') as _cfg:
