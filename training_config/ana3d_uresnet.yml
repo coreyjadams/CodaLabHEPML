@@ -14,37 +14,31 @@ NETWORK:
   BATCH_NORM: True
   NUM_LABELS: 4
   REGULARIZE: 0.001
+  HAS_LABELS: False
 
 # training parameters:
-N_MINIBATCH: 6
+N_MINIBATCH: 1
 MINIBATCH_SIZE: 1
 SAVE_ITERATION: 500
 REPORT_ITERATION: 10
 SUMMARY_ITERATION: 1
 BASE_LEARNING_RATE:  0.001
-TRAINING: True
-ITERATIONS: 25000
+TRAINING: False
+ITERATIONS: 5000
+
 
 # IO Parameters:
 IO:
-  TRAIN:
-    FILE: './larcv_io_config/train_io.cfg'
-    FILLER: 'TrainIO'
+  ANA:
+    FILE: './larcv_io_config/ana_io.cfg'
+    OUTPUT: './larcv_io_config/ana_out.cfg'
+    FILLER: 'ValIO'
     VERBOSITY: 3
-    KEYWORD_DATA:  'main_data'
-    KEYWORD_LABEL: 'main_label'
-
-  TEST:
-    PROFILE_IO: false
-    FILE: './larcv_io_config/test_io.cfg'
-    FILLER: 'TestIO'
-    VERBOSITY: 3
-    KEYWORD_DATA:  'test_data'
-    KEYWORD_LABEL: 'test_label'
-
+    KEYWORD_DATA:  'ana_data'
+    # KEYWORD_LABEL:  'ana_label'
 
 # General parameters:
 LOGDIR: 'log/uresnet_3d/'
-RESTORE: False
+RESTORE: True
 
 
