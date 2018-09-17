@@ -34,10 +34,19 @@ class uresnet3d(uresnetcore):
         self._core_network_params += [
             'N_INITIAL_FILTERS',
             'RESIDUAL',
+            'CONCATENATE',
+            'MERGE_BEFORE_BLOCK',
             'BLOCKS_PER_LAYER',
             'BLOCKS_DEEPEST_LAYER',
             'NETWORK_DEPTH',
         ]
+
+        # Some choices to make about the way the network functions:
+        # RESIDUAL: the individual blocks are residual or standard convolutions
+        # CONCATENATE: Concatenate the downsampling filters (true) or add
+        #       them (false) at the decoding path
+        # MERGE_BEFORE_BLOCK: Join downsampling and upsampling right before
+        #       the convolutional block (true) or after (false)
 
 
         return
@@ -230,35 +239,52 @@ class uresnet3d(uresnetcore):
                                name=name)
 
 
-            x = tf.concat([x, network_filters[-1]],
+            if not self._params['MERGE_BEFORE_BLOCK']:
+
+                # Residual
+                for j in xrange(self._params['BLOCKS_PER_LAYER']):
+                    name = "resblock_up"
+                    name += "_{0}_{1}".format(i, j)
+
+                    x = block(x, self._params['TRAINING'],
+                                       batch_norm=self._params['BATCH_NORM'],
+                                       name=name)
+
+            if not self._params['CONCATENATE']:
+                x = x + network_filters[-1]
+            else:
+                x = tf.concat([x, network_filters[-1]],
                               axis=-1, name='up_concat_{0}'.format(i))
+
+                # Only need to bottleneck if concatenating
+                name = "BottleneckUpsample"
+                name += "_{0}".format(i)
+
+
+                # Include a bottleneck to reduce the number of filters after upsampling:
+                x = convolutional_block(x,
+                            is_training=self._params['TRAINING'],
+                            name=name,
+                            batch_norm=True,
+                            dropout=False,
+                            kernel_size=[1,1,1],
+                            n_filters=n_filters)
+
 
             # Remove the recently concated filters:
             network_filters.pop()
             # with tf.variable_scope("bottleneck_plane{0}_{1}".format(p,i)):
 
-            name = "BottleneckUpsample"
-            name += "_{0}".format(i)
+            if self._params['MERGE_BEFORE_BLOCK']:
 
+                # Residual
+                for j in xrange(self._params['BLOCKS_PER_LAYER']):
+                    name = "resblock_up"
+                    name += "_{0}_{1}".format(i, j)
 
-            # Include a bottleneck to reduce the number of filters after upsampling:
-            x = convolutional_block(x,
-                        is_training=self._params['TRAINING'],
-                        name=name,
-                        batch_norm=True,
-                        dropout=False,
-                        kernel_size=[1,1,1],
-                        n_filters=n_filters)
-
-
-            # Residual
-            for j in xrange(self._params['BLOCKS_PER_LAYER']):
-                name = "resblock_up"
-                name += "_{0}_{1}".format(i, j)
-
-                x = block(x, self._params['TRAINING'],
-                                   batch_norm=self._params['BATCH_NORM'],
-                                   name=name)
+                    x = block(x, self._params['TRAINING'],
+                                       batch_norm=self._params['BATCH_NORM'],
+                                       name=name)
 
 
 
