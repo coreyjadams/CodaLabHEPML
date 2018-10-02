@@ -290,6 +290,16 @@ class networkcore(object):
         else:
             return softmax
 
+    def inference_all_layers(self,sess,inputs):
+
+        feed_dict = self.feed_dict(inputs)
+
+        ops = self._ops_list
+        computed_ops = sess.run( ops, feed_dict = feed_dict )
+
+        else:
+            return computed_ops, self._ops_names
+
     def metrics(self, inputs):
 
         ops = []

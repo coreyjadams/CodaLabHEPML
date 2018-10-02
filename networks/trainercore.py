@@ -297,7 +297,9 @@ class trainercore(object):
         return  self._net.inference(sess   = self._sess,
                                     inputs = inputs)
 
-
+    def inference_all_layers(self, inputs):
+        return self._net.inference_all_layers(sess   = self._sess,
+                                              inputs = inputs)
 
     def ana_step(self):
         raise NotImplementedError("Must implement ana_step uniquely.")

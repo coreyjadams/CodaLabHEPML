@@ -160,6 +160,12 @@ class uresnet3d(uresnetcore):
         # The downsampling and upsampling steps are not complicated
         # residual steps, just normal convolutional layers
 
+        # This list of operations becomes a way to see what the network
+        # is doing at every step.  Only gets run at inference on a handful
+        # of events:
+
+        operations_list = []
+        operations_names = []
 
         # Initial convolution to get to the correct number of filters:
 
@@ -170,6 +176,9 @@ class uresnet3d(uresnetcore):
                         dropout=False,
                         kernel_size=[5,5,5],
                         n_filters=self._params['N_INITIAL_FILTERS'])
+
+        operations_list.append(x)
+        operations_names.append("Conv2DInitial")
 
         if verbosity > 1:
             print x.get_shape()
@@ -197,6 +206,9 @@ class uresnet3d(uresnetcore):
                                    batch_norm=self._params['BATCH_NORM'],
                                    name=name)
 
+                operations_list.append(x)
+                operations_names.append(name)
+
             name = "downsample"
             name += "_{0}".format(i)
 
@@ -204,6 +216,9 @@ class uresnet3d(uresnetcore):
             x = downsample_block(x, self._params['TRAINING'],
                                     batch_norm=self._params['BATCH_NORM'],
                                     name=name)
+
+            operations_list.append(x)
+            operations_names.append(name)
 
             if verbosity > 1:
                 print "Layer {i}: x.get_shape(): {s}".format(
@@ -216,7 +231,8 @@ class uresnet3d(uresnetcore):
         for j in xrange(self._params['BLOCKS_DEEPEST_LAYER']):
             x = block(x, self._params['TRAINING'],
                 batch_norm=self._params['BATCH_NORM'], name="deepest_block_{0}".format(j))
-
+            operations_list.append(x)
+            operations_names.append("deepest_block_{0}".format(j))
 
         # Come back up the network:
         for i in xrange(self._params['NETWORK_DEPTH']-1, -1, -1):
@@ -238,6 +254,8 @@ class uresnet3d(uresnetcore):
                                n_output_filters=n_filters,
                                name=name)
 
+            operations_list.append(x)
+            operations_names.append(name)
 
             if not self._params['MERGE_BEFORE_BLOCK']:
 
@@ -250,8 +268,13 @@ class uresnet3d(uresnetcore):
                                        batch_norm=self._params['BATCH_NORM'],
                                        name=name)
 
+                    operations_list.append(x)
+                    operations_names.append(name)
+
             if not self._params['CONCATENATE']:
                 x = x + network_filters[-1]
+                operations_list.append(x)
+                operations_names.append(name + "_summed")
             else:
                 x = tf.concat([x, network_filters[-1]],
                               axis=-1, name='up_concat_{0}'.format(i))
@@ -270,6 +293,8 @@ class uresnet3d(uresnetcore):
                             kernel_size=[1,1,1],
                             n_filters=n_filters)
 
+                operations_list.append(x)
+                operations_names.append(name)
 
             # Remove the recently concated filters:
             network_filters.pop()
@@ -286,7 +311,8 @@ class uresnet3d(uresnetcore):
                                        batch_norm=self._params['BATCH_NORM'],
                                        name=name)
 
-
+                    operations_list.append(x)
+                    operations_names.append(name)
 
         name = "FinalResidualBlock"
 
@@ -294,6 +320,9 @@ class uresnet3d(uresnetcore):
                 self._params['TRAINING'],
                 batch_norm=self._params['BATCH_NORM'],
                 name=name)
+
+        operations_list.append(x)
+        operations_names.append(name)
 
         name = "BottleneckConv2D"
 
@@ -310,8 +339,14 @@ class uresnet3d(uresnetcore):
                              trainable=self._params['TRAINING'],
                              name=name)
 
+        operations_list.append(x)
+        operations_names.append(name)
+
         if verbosity > 0:
             print "Final output shape: " + str(x.get_shape())
+
+        self._ops_list = operations_list
+        self._ops_names = operations_names
 
         return x
 

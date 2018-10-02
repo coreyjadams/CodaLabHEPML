@@ -176,6 +176,11 @@ class uresnet_trainer(trainercore.trainercore):
 
                 self._output.save_entry()
 
+                if 'SAVE_ALL_LAYERS' in self._config and self._config['SAVE_ALL_LAYERS']:
+                    ops_list, ops_names = self.inference_all_layers(minibatch_data)
+
+                    print len(ops_list)
+
 
         self._dataloaders['ANA'].next(store_entries   = (not self._config['TRAINING']),
                                       store_event_ids = (not self._config['TRAINING']))
